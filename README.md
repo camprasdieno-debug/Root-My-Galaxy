@@ -31,7 +31,7 @@ Requirements:
 
 - Android Studio JBR 21
 - Android SDK 37
-- Android NDK 28 or newer
+- Android NDK 29 or newer
 - CMake 3.22.1
 
 ```powershell

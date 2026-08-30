@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "dev.busung.s25uroot"
     compileSdk = 37
+    ndkVersion = "29.0.14206865"
 
     defaultConfig {
         applicationId = "dev.busung.s25uroot"
