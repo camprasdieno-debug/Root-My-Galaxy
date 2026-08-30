@@ -4,22 +4,22 @@
     <string name="nav_overview">Home</string>
     <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
-    <string name="install_confirm_title">Install KernelSU?</string>
-    <string name="install_confirm_body">The app will verify the support profile, then download and run the exploit and KernelSU payload from GitHub.</string>
+    <string name="install_confirm_title">Install KernelSU Next?</string>
+    <string name="install_confirm_body">The app will run the exploit and late-load the KernelSU Next module.</string>
     <string name="action_confirm">Confirm</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_close">Close</string>
     <string name="action_retry">Try again</string>
     <string name="action_done">Done</string>
     <string name="action_back">Back</string>
-    <string name="install_tap_manager">Tap to install KernelSU Manager</string>
-    <string name="install_tap_open_manager">Tap to open KernelSU Manager</string>
+    <string name="install_tap_manager">Tap to install KernelSU Next Manager</string>
+    <string name="install_tap_open_manager">Tap to open KernelSU Next Manager</string>
     <string name="install_tap_retry">Tap to try again</string>
-    <string name="install_tap_start">Tap to install KernelSU</string>
+    <string name="install_tap_start">Tap to install KernelSU Next</string>
     <string name="device">Device</string>
     <string name="how_it_works">How it works</string>
-    <string name="kernelsu_card_title">KernelSU</string>
-    <string name="kernelsu_card_description">A kernel-based root solution for Android</string>
+    <string name="kernelsu_card_title">KernelSU Next</string>
+    <string name="kernelsu_card_description">An advanced kernel-based root solution for Android</string>
     <string name="firmware">Firmware</string>
     <string name="system">System</string>
     <string name="kernel">Kernel</string>
@@ -91,13 +91,13 @@
     <string name="phase_installed">KernelSU module and control channel verified</string>
     <string name="phase_failed">Review the failure point in the log below</string>
 
-    <string name="status_ksu_active">KernelSU active</string>
+    <string name="status_ksu_active">KernelSU Next active</string>
     <string name="status_not_installed">Not installed</string>
     <string name="status_support_failed">Support check failed</string>
     <string name="status_checking_github">Checking GitHub support manifest</string>
     <string name="status_downloading_payload">Downloading payloads</string>
     <string name="status_exploit_running">Running kernel exploit</string>
-    <string name="status_ksu_loading">Late-loading KernelSU</string>
+    <string name="status_ksu_loading">Late-loading KernelSU Next</string>
     <string name="status_install_failed">Installation failed</string>
     <string name="log_profile">[+] Support profile: %1$s</string>
     <string name="log_download_verified">[+] Payload download complete</string>
@@ -117,7 +117,7 @@
     <string name="error_receipt">Unable to save the installation verification receipt</string>
 
     <string name="artifact_exploit">exploit</string>
-    <string name="artifact_kernelsu">KernelSU</string>
+    <string name="artifact_kernelsu">KernelSU Next</string>
     <string name="repo_no_profile">No compatible payload supports this model and kernel version</string>
     <string name="repo_downloading">Downloading %1$s</string>
     <string name="repo_size_mismatch">%1$s size does not match the support manifest</string>
