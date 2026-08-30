@@ -8,10 +8,10 @@ supported Samsung model and kernel combinations. The application itself is kept 
 from device offsets, native exploit payloads, and KernelSU build artifacts.
 
 
-[Latest release](https://github.com/BuSung-dev/Root-My-Galaxy/releases)
+[Latest release](https://github.com/Daubfy/Root-My-Galaxy/releases)
 
 The device feed and native payloads are maintained in
-[Root-My-Galaxy-Payloads](https://github.com/BuSung-dev/Root-My-Galaxy-Payloads).
+[IonStack-S22U](https://github.com/Daubfy/IonStack-S22U/tree/main/artifacts).
 
 ## Application
 
@@ -25,6 +25,28 @@ The app selects a payload whose model list and three-part kernel version match
 the phone. For example, `6.6.98-android15-8-...` matches `6.6.98`. Advanced
 mode filters the catalog by both values and allows manual selection with model
 and kernel-version warnings.
+
+## Initial Setup
+
+- Download the payload for your device [here](https://github.com/Daubfy/IonStack-S22U/tree/main/artifacts)
+
+- Download the [KernelSU Next module](https://github.com/sarabpal-dev/KernelSU-Next/releases/download/v3.3.0-android12-5.10/kernelsu-android12-5.10.ko)
+
+You should now have something like this:
+
+<img width="506" height="336" alt="image" src="https://github.com/user-attachments/assets/f6ecc57b-473d-4c0f-a476-10ca2ce487e2" />
+
+- Push the payload and the KernelSU module to your device:
+
+```sh
+adb push cve-2026-43499 /data/local/tmp/cve-2026-43499
+adb push cve-2026-43499-root /data/local/tmp/cve-2026-43499-root
+adb push cve-exp32 /data/local/tmp/cve-exp32
+adb push kernelsu-android12-5.10.ko /data/local/tmp/kernelsu-android12-5.10.ko
+adb shell chmod 755 /data/local/tmp/cve-2026-43499 /data/local/tmp/cve-2026-43499-root /data/local/tmp/cve-exp32
+```
+
+
 
 ## Build
 
