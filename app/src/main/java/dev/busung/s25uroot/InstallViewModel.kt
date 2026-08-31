@@ -67,6 +67,7 @@ private fun sha256OrNull(file: File): String? = runCatching {
 
 class InstallViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application
+    private val repository = PayloadRepository(application)
     private val historyStore = InstallHistoryStore(application)
     private val mutableState = MutableStateFlow(InstallUiState())
     private val mutableHistory = MutableStateFlow(historyStore.closeInterruptedRuns())
@@ -118,7 +119,15 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun loadTargetCatalog() {
-        // Payload catalog removed — no-op
+        if (mutableTargetCatalog.value.loading) return
+        mutableTargetCatalog.value = TargetCatalogUiState(loading = true)
+        viewModelScope.launch(Dispatchers.IO) {
+            mutableTargetCatalog.value = try {
+                TargetCatalogUiState(profiles = repository.loadTargets())
+            } catch (error: Throwable) {
+                TargetCatalogUiState(error = error.message ?: error.javaClass.simpleName)
+            }
+        }
     }
 
     fun install(profileId: String? = null) {
@@ -143,11 +152,32 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
                     appendLog(app.getString(R.string.log_shizuku_permission))
                 }
 
+                setPhase(InstallPhase.Checking, app.getString(R.string.status_checking_github))
+                val profile = if (profileId == null) {
+                    repository.resolveTarget(DeviceSnapshot.current())
+                } else {
+                    repository.resolveTarget(profileId)
+                }
+                appendLog(app.getString(R.string.log_profile, profile.profileId))
+                updateHistoryProfile(profile.profileId)
+
+                setPhase(InstallPhase.Downloading, app.getString(R.string.status_downloading_payload))
+                val payloads = repository.download(profile) { appendLog("[*] $it") }
+                appendLog(app.getString(R.string.log_download_verified))
+
+                // Stage files to /data/local/tmp/ via Shizuku
+                appendLog("[*] Staging files...")
+                stagePayload(payloads.exploit, "/data/local/tmp/${payloads.exploit.name}")
+                payloads.exploitRoot?.let { stagePayload(it, "/data/local/tmp/${it.name}") }
+                payloads.exploitHelper?.let { stagePayload(it, "/data/local/tmp/${it.name}") }
+                stagePayload(payloads.kernelSu, "/data/local/tmp/${payloads.kernelSu.name}")
+
                 setPhase(InstallPhase.Exploiting, app.getString(R.string.status_exploit_running))
-                runScript("LD_PRELOAD=/data/local/tmp/cve-2026-43499 sh")
+                runScript("LD_PRELOAD=/data/local/tmp/${payloads.exploit.name} sh")
 
                 setPhase(InstallPhase.LoadingKernelSu, app.getString(R.string.status_ksu_loading))
-                runScript("/data/local/tmp/cve-2026-43499-root -c 'insmod /data/local/tmp/kernelsu-android12-5.10.ko'")
+                val rootBinary = payloads.exploitRoot?.name ?: payloads.exploit.name
+                runScript("/data/local/tmp/$rootBinary -c 'insmod /data/local/tmp/${payloads.kernelSu.name}'")
 
                 setPhase(InstallPhase.Installed, app.getString(R.string.status_ksu_active))
                 storeInstallReceipt()
@@ -163,42 +193,47 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-private suspend fun runScript(command: String) {
-    val logPrefix = mutableState.value.log
-    val process = ShizukuController.exec(arrayOf("/system/bin/sh", "-c", command))
-    val captured = StringBuilder()
-    var lastRawLog = ""
-    try {
-        while (process.isAlive) {
-            val rawLog = drainProcessOutput(process, captured)
-            if (rawLog != lastRawLog) {
-                publishScriptLog(logPrefix, rawLog)
-                lastRawLog = rawLog
-                if (rawLog.contains("exploit completed")) break
+    private fun stagePayload(source: File, remotePath: String) {
+        appendLog("[*] Staging ${source.name}...")
+        ShizukuController.writeFile(remotePath, "755", source.inputStream())
+    }
+
+    private suspend fun runScript(command: String) {
+        val logPrefix = mutableState.value.log
+        val process = ShizukuController.exec(arrayOf("/system/bin/sh", "-c", command))
+        val captured = StringBuilder()
+        var lastRawLog = ""
+        try {
+            while (process.isAlive) {
+                val rawLog = drainProcessOutput(process, captured)
+                if (rawLog != lastRawLog) {
+                    publishScriptLog(logPrefix, rawLog)
+                    lastRawLog = rawLog
+                    if (rawLog.contains("exploit completed")) break
+                }
+                delay(LOG_POLL_INTERVAL)
             }
-            delay(LOG_POLL_INTERVAL)
-        }
-        if (process.isAlive) {
-            process.destroy()
-            delay(500.milliseconds)
+            if (process.isAlive) {
+                process.destroy()
+                delay(500.milliseconds)
+                if (process.isAlive) process.destroyForcibly()
+            }
+            val exitCode = try { process.exitValue() } catch (_: Throwable) { 0 }
+            val rawLog = drainProcessOutput(process, captured)
+            publishScriptLog(logPrefix, rawLog)
+            val completedSuccessfully = lastRawLog.contains("exploit completed")
+            require(completedSuccessfully || exitCode == 0) {
+                app.getString(
+                    R.string.error_payload_exit,
+                    exitCode,
+                    captured.toString().trim().takeIf(String::isNotBlank)?.let { " ($it)" } ?: "",
+                )
+            }
+        } finally {
             if (process.isAlive) process.destroyForcibly()
         }
-        val exitCode = try { process.exitValue() } catch (_: Throwable) { 0 }
-        val rawLog = drainProcessOutput(process, captured)
-        publishScriptLog(logPrefix, rawLog)
-        val completedSuccessfully = lastRawLog.contains("exploit completed")
-        require(completedSuccessfully || exitCode == 0) {
-            app.getString(
-                R.string.error_payload_exit,
-                exitCode,
-                captured.toString().trim().takeIf(String::isNotBlank)?.let { " ($it)" } ?: "",
-            )
-        }
-    } finally {
-        if (process.isAlive) process.destroyForcibly()
+        appendLog(app.getString(R.string.log_bootstrap_root))
     }
-    appendLog(app.getString(R.string.log_bootstrap_root))
-}
 
     private fun drainProcessOutput(process: Process, buffer: StringBuilder): String {
         return try {
@@ -260,6 +295,9 @@ private suspend fun runScript(command: String) {
 
     private fun updateHistoryLog() =
         updateHistory { it.copy(log = mutableState.value.log) }
+
+    private fun updateHistoryProfile(profileId: String) =
+        updateHistory { it.copy(profileId = profileId) }
 
     private fun finishHistory(result: InstallRunResult) {
         updateHistory { entry ->
