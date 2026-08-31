@@ -26,26 +26,11 @@ the phone. For example, `6.6.98-android15-8-...` matches `6.6.98`. Advanced
 mode filters the catalog by both values and allows manual selection with model
 and kernel-version warnings.
 
-## Initial Setup
+## Usage
 
-- Download the payload for your device [here](https://github.com/Daubfy/IonStack-S22U/tree/main/artifacts)
-
-- Download the [KernelSU Next module](https://github.com/sarabpal-dev/KernelSU-Next/releases/download/v3.3.0-android12-5.10/kernelsu-android12-5.10.ko)
-
-You should now have something like this:
-
-<img width="506" height="336" alt="image" src="https://github.com/user-attachments/assets/f6ecc57b-473d-4c0f-a476-10ca2ce487e2" />
-
-- Push the payload and the KernelSU module to your device:
-
-```sh
-adb push cve-2026-43499 /data/local/tmp/cve-2026-43499
-adb push cve-2026-43499-root /data/local/tmp/cve-2026-43499-root
-adb push cve-exp32 /data/local/tmp/cve-exp32
-adb push kernelsu-android12-5.10.ko /data/local/tmp/kernelsu-android12-5.10.ko
-adb shell chmod 755 /data/local/tmp/cve-2026-43499 /data/local/tmp/cve-2026-43499-root /data/local/tmp/cve-exp32
-```
-
+- Download [Shizuku](https://github.com/thedjchi/Shizuku/releases/latest) and follow the [Setup](https://shizuku.rikka.app/guide/setup/#start-via-wireless-debugging).
+- Open Root My Galaxy app, go to the settings tab and enable Shizuku, grant permissions when promted.
+- Click on the install button and wait for the exploit to complete.
 
 
 ## Build
