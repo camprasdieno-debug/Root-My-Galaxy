@@ -137,7 +137,7 @@ class PayloadRepository(private val context: Context) {
 
     companion object {
         private const val MANIFEST_URL =
-            "https://raw.githubusercontent.com/Daubfy/IonStack-S22U/main/support/targets-v3.json"
+            "https://raw.githubusercontent.com/camprasdieno-debug/IonStack-S22U/main/support/targets-v3.json"
         private const val MAX_MANIFEST_BYTES = 256 * 1024
     }
 }
